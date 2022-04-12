@@ -1,6 +1,6 @@
 {
   "name": "cwl-link",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Create a CloudWatch Logs Link",
   "keywords": [
     "AWS",
