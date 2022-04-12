@@ -22,7 +22,7 @@ yarn add cwl-link
 // ES5 example
 const cwllink = require('cwl-link');
 // ES6+ example
-import cwllink from 'cwl-link';
+import * as cwllink from 'cwl-link';
 
 exports.handler =  async function(event, context) {
   // This is a link for a Log Event page filtered by request id.
@@ -36,7 +36,7 @@ exports.handler =  async function(event, context) {
 // ES5 example
 const cwllink = require('cwl-link');
 // ES6+ example
-import cwllink from 'cwl-link';
+import * as cwllink from 'cwl-link';
 
 const region = '...';
 const logGroupName = '...';
@@ -50,14 +50,16 @@ const filteredByTermsLink = cwllink.create(region, logGroupName, logEventName, {
 
 const start = 1_649_602_800_000; // unix time(ms): 2022-04-12 00:00:00
 const filteredByStartLink = cwllink.create(region, logGroupName, logEventName, { start });
+const start = -3_600_000; // in the last hour(ms):
+const filteredByRelativeStartLink = cwllink.create(region, logGroupName, logEventName, { start });
 
 const end = 1_649_689_199_000; // unix time(ms): 2022-04-12 23:59:59
 const filteredByEndLink = cwllink.create(region, logGroupName, logEventName, { end });
-const filteredByStartAndEndLink = cwllink.create(region, logGroupName, logEventName, { start, end });
 
-const start = -3_600_000; // in the last hour(ms):
-const filteredByRelativeStartLink = cwllink.create(region, logGroupName, logEventName, { start });
+const filteredByMixLink = cwllink.create(region, logGroupName, logEventName, { terms, start, end });
 ```
+
+These Usages have been tested.
 
 ## Type aliases
 

@@ -18,19 +18,22 @@
   "license": "MIT",
   "main": "dist/cwl-link.js",
   "module": "dist/cwl-link.mjs",
-  "typings": "dist/cwl-link.d.ts",
   "types": "dist/cwl-link.d.ts",
   "files": [
     "/dist"
   ],
   "scripts": {
     "build": "rollup -c",
-    "doc": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts"
+    "doc": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.93",
+    "@types/jest": "^27.4.1",
     "@types/node": "^17.0.23",
     "esbuild": "^0.14.32",
+    "esbuild-jest": "^0.5.0",
+    "jest": "^27.5.1",
     "rollup": "^2.70.1",
     "rollup-plugin-dts": "^4.2.0",
     "rollup-plugin-esbuild": "^4.9.1",

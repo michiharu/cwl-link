@@ -47,7 +47,7 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
   if (Array.isArray(terms) && terms.length !== 0)
     filters.push(`filterPattern=${terms.map((t) => encodeURIComponent(`"${t}"`)).join('+')}`);
   if (typeof start === 'number') filters.push(`start=${start}`);
-  if (typeof end === 'number') filters.push(`end=${start}`);
+  if (typeof end === 'number') filters.push(`end=${end}`);
 
   const filter = encodeURIComponent(`?${filters.join('&')}`).replace(/%/g, '$');
   url.hash = `logsV2:log-groups/log-group/${group}/log-events/${event}${filter}`;
@@ -61,7 +61,7 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
  * @return {*} a link for a Log Event page filtered by request id.
  */
 export const fromLambdaContext = (context: Context): string => {
-  const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
+  const region = process.env.AWS_REGION;
   const { logGroupName, logStreamName, awsRequestId } = context;
   return create(region, logGroupName, logStreamName, { terms: [awsRequestId] });
 };
