@@ -21,7 +21,7 @@ export type FilterOptions = {
  * @param {string} logGroup
  * @param {string} [logEvents] optional parameter
  * @param {string[]} [options] optional parameter for filtering logs
- * @return {*}  a link for CloudWatch Logs.
+ * @return {*} a link for CloudWatch Logs.
  */
 export const create = (region: string, logGroup: string, logEvents?: string, options: FilterOptions = {}): string => {
   const url = new URL(`https://${region}.console.aws.amazon.com/cloudwatch/home`);
@@ -58,7 +58,7 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
  * Create a link for CloudWatch Logs from a context of AWS Lambda.
  *
  * @param {Context} context a context of AWS Lambda.
- * @return {*}  a link for a Log Event page filtered by request id.
+ * @return {*} a link for a Log Event page filtered by request id.
  */
 export const fromLambdaContext = (context: Context): string => {
   const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
