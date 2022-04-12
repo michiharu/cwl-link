@@ -114,9 +114,9 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `context` | `Context` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `context` | `Context` | This is included in `@types/aws-lambda` package. |
 
 #### Returns
 
