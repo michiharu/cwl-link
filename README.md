@@ -16,28 +16,36 @@ yarn add cwl-link
 
 ## Usage
 
-### AWS Lambda function handler
+### How to import
 
 ```typescript
 // ES5 example
 const cwllink = require('cwl-link');
 // ES6+ example
 import * as cwllink from 'cwl-link';
+```
 
-exports.handler =  async function(event, context) {
+### AWS Lambda function handler
+
+```typescript
+exports.handler = function(event, context) {
   // This is a link for a Log Event page filtered by request id.
   const link = cwllink.fromLambdaContext(context);
+}
+```
+
+### AWS Lambda triggered by Subscription Filters
+
+```typescript
+exports.handler = async function(event, context) {
+  const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event);
+  console.log(link);
 }
 ```
 
 ### Other Node.js runtime environment
 
 ```typescript
-// ES5 example
-const cwllink = require('cwl-link');
-// ES6+ example
-import * as cwllink from 'cwl-link';
-
 const region = '...';
 const logGroupName = '...';
 const logGroupLink = cwllink.create(region, logGroupName);
@@ -106,7 +114,7 @@ a link for CloudWatch Logs.
 
 #### Defined in
 
-[index.ts:26](https://github.com/michiharu/cwl-link/blob/bd277a7/src/index.ts#L26)
+[index.ts:27](https://github.com/michiharu/cwl-link/blob/55a80ff/src/index.ts#L27)
 
 ___
 
@@ -114,11 +122,13 @@ ___
 
 ▸ **fromLambdaContext**(`context`): `string`
 
+Create a link for CloudWatch Logs from a context of AWS Lambda.
+
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `context` | `Context` | This is included in `@types/aws-lambda` package. |
+| `context` | `Context` | a context of AWS Lambda. |
 
 #### Returns
 
@@ -128,4 +138,24 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:63](https://github.com/michiharu/cwl-link/blob/bd277a7/src/index.ts#L63)
+[index.ts:64](https://github.com/michiharu/cwl-link/blob/55a80ff/src/index.ts#L64)
+
+___
+
+### fromLambdaEventTriggeredBySubscriptionFilters
+
+▸ **fromLambdaEventTriggeredBySubscriptionFilters**(`event`): `Promise`<`string`\>
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `event` | `CloudWatchLogsEvent` | a event of AWS Lambda triggered by Subscription Filters. |
+
+#### Returns
+
+`Promise`<`string`\>
+
+#### Defined in
+
+[index.ts:70](https://github.com/michiharu/cwl-link/blob/55a80ff/src/index.ts#L70)
