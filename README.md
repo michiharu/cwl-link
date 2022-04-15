@@ -87,7 +87,7 @@ Options for filtering logs.
 
 #### Defined in
 
-[index.ts:4](https://github.com/michiharu/cwl-link/blob/bd277a7/src/index.ts#L4)
+[index.ts:5](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L5)
 
 ## Functions
 
@@ -104,7 +104,7 @@ Create a link for CloudWatch Logs.
 | `region` | `string` |
 | `logGroup` | `string` |
 | `logEvents?` | `string` |
-| `options?` | `FilterOptions` |
+| `options` | [`FilterOptions`](modules.md#filteroptions) |
 
 #### Returns
 
@@ -114,7 +114,7 @@ a link for CloudWatch Logs.
 
 #### Defined in
 
-[index.ts:27](https://github.com/michiharu/cwl-link/blob/55a80ff/src/index.ts#L27)
+[index.ts:27](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L27)
 
 ___
 
@@ -138,13 +138,15 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:64](https://github.com/michiharu/cwl-link/blob/55a80ff/src/index.ts#L64)
+[index.ts:64](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L64)
 
 ___
 
 ### fromLambdaEventTriggeredBySubscriptionFilters
 
 ▸ **fromLambdaEventTriggeredBySubscriptionFilters**(`event`): `Promise`<`string`\>
+
+Create a link for CloudWatch Logs from a event of AWS Lambda triggered by Subscription Filters.
 
 #### Parameters
 
@@ -156,6 +158,32 @@ ___
 
 `Promise`<`string`\>
 
+a link for a Log Event page filtered by request id.
+
 #### Defined in
 
-[index.ts:70](https://github.com/michiharu/cwl-link/blob/55a80ff/src/index.ts#L70)
+[index.ts:91](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L91)
+
+___
+
+### gunzipAsync
+
+▸ **gunzipAsync**(`src`): `Promise`<`Buffer`\>
+
+gunzipAsync is a promise wapper of zlib.gunzip.
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `src` | `Buffer` |
+
+#### Returns
+
+`Promise`<`Buffer`\>
+
+decompressed
+
+#### Defined in
+
+[index.ts:76](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L76)
