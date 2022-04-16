@@ -104,7 +104,7 @@ Create a link for CloudWatch Logs.
 | `region` | `string` |
 | `logGroup` | `string` |
 | `logEvents?` | `string` |
-| `options?` | [`FilterOptions`](modules.md#filteroptions) |
+| `options?` | `FilterOptions` |
 
 #### Returns
 
