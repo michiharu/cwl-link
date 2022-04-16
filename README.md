@@ -87,7 +87,7 @@ Options for filtering logs.
 
 #### Defined in
 
-[index.ts:5](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L5)
+[index.ts:5](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L5)
 
 ## Functions
 
@@ -104,7 +104,7 @@ Create a link for CloudWatch Logs.
 | `region` | `string` |
 | `logGroup` | `string` |
 | `logEvents?` | `string` |
-| `options` | [`FilterOptions`](modules.md#filteroptions) |
+| `options?` | [`FilterOptions`](modules.md#filteroptions) |
 
 #### Returns
 
@@ -114,7 +114,7 @@ a link for CloudWatch Logs.
 
 #### Defined in
 
-[index.ts:27](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L27)
+[index.ts:27](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L27)
 
 ___
 
@@ -138,7 +138,7 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:64](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L64)
+[index.ts:64](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L64)
 
 ___
 
@@ -162,7 +162,7 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:91](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L91)
+[index.ts:91](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L91)
 
 ___
 
@@ -186,4 +186,4 @@ decompressed
 
 #### Defined in
 
-[index.ts:76](https://github.com/michiharu/cwl-link/blob/4cd8bc1/src/index.ts#L76)
+[index.ts:76](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L76)
