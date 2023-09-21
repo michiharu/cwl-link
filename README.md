@@ -25,8 +25,6 @@ const cwllink = require('cwl-link');
 import * as cwllink from 'cwl-link';
 ```
 
-### AWS Lambda function handler
-
 ```typescript
 exports.handler = function(event, context) {
   // This is a link for a Log Event page filtered by request id.
@@ -39,7 +37,18 @@ exports.handler = function(event, context) {
 ```typescript
 exports.handler = async function(event, context) {
   const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event);
-  console.log(link);
+}
+```
+
+Or you can use decoded data.
+
+```typescript
+exports.handler = async function(event, context) {
+  const decoded = await cwllink.decodeCloudWatchLogsData(event.awslogs.data);
+
+  // you can use decoded data.
+
+  const link = await cwllink.fromCloudWatchLogsData(decoded);
 }
 ```
 
@@ -87,7 +96,7 @@ Options for filtering logs.
 
 #### Defined in
 
-[index.ts:5](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L5)
+[index.ts:5](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L5)
 
 ## Functions
 
@@ -104,7 +113,7 @@ Create a link for CloudWatch Logs.
 | `region` | `string` |
 | `logGroup` | `string` |
 | `logEvents?` | `string` |
-| `options?` | `FilterOptions` |
+| `options` | [`FilterOptions`](modules.md#filteroptions) |
 
 #### Returns
 
@@ -114,7 +123,55 @@ a link for CloudWatch Logs.
 
 #### Defined in
 
-[index.ts:27](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L27)
+[index.ts:27](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L27)
+
+___
+
+### decodeCloudWatchLogsData
+
+▸ **decodeCloudWatchLogsData**(`data`): `Promise`<`CloudWatchLogsDecodedData`\>
+
+Decode CloudWatch Logs data.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `data` | `string` | base64 of zipped data. |
+
+#### Returns
+
+`Promise`<`CloudWatchLogsDecodedData`\>
+
+CloudWatch Logs decoded data.
+
+#### Defined in
+
+[index.ts:91](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L91)
+
+___
+
+### fromCloudWatchLogsData
+
+▸ **fromCloudWatchLogsData**(`data`): `Promise`<`string`\>
+
+Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `data` | `CloudWatchLogsDecodedData` | CloudWatch Logs decoded data. |
+
+#### Returns
+
+`Promise`<`string`\>
+
+a link for a Log Event page filtered by request id.
+
+#### Defined in
+
+[index.ts:105](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L105)
 
 ___
 
@@ -138,7 +195,7 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:64](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L64)
+[index.ts:64](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L64)
 
 ___
 
@@ -162,7 +219,7 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:91](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L91)
+[index.ts:119](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L119)
 
 ___
 
@@ -186,4 +243,4 @@ decompressed
 
 #### Defined in
 
-[index.ts:76](https://github.com/michiharu/cwl-link/blob/5192d1a/src/index.ts#L76)
+[index.ts:76](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L76)
