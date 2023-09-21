@@ -69,7 +69,7 @@ export const fromLambdaContext = (context: Context): string => {
 
 /**
  * gunzipAsync is a promise wapper of zlib.gunzip.
- * 
+ *
  * @param {Buffer} compressed
  * @returns decompressed
  */
@@ -92,7 +92,10 @@ export const fromLambdaEventTriggeredBySubscriptionFilters = async (event: Cloud
   const region = process.env.AWS_REGION;
   const compressed = Buffer.from(event.awslogs.data, 'base64');
   const decompressed = await gunzipAsync(compressed);
-  const decodedEvent = JSON.parse(decompressed.toString('ascii')) as CloudWatchLogsDecodedData;
+  const ascii = decompressed.toString('ascii');
+  const cleaned = ascii.replace(/[\u0000-\u001F]+/g, '');
+  const decodedEvent = JSON.parse(cleaned) as CloudWatchLogsDecodedData;
+  console.log(decodedEvent);
   const { logGroup, logStream, logEvents } = decodedEvent;
   const requestId = logEvents[0].message.match(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)[0];
   const link = create(region, logGroup, logStream, { terms: [requestId] });

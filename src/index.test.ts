@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda';
+import { CloudWatchLogsEvent, Context } from 'aws-lambda';
 import * as cwllink from './index';
 
 const base = `https://region.console.aws.amazon.com/cloudwatch/home?region=region`;
@@ -54,15 +54,16 @@ describe('cwllink.create()', () => {
   });
 });
 
-const context: Pick<Context, 'logGroupName' | 'logStreamName' | 'awsRequestId'> = {
-  logGroupName: 'LOG_GROUP',
-  logStreamName: 'LOG_EVENT',
-  awsRequestId: 'REQUEST_ID',
-};
 process.env.AWS_REGION = 'region';
 describe('cwllink.fromLambdaContext()', () => {
-  test('fromLambdaContext(context)', () =>
+  test('fromLambdaContext(context)', () => {
+    const context: Pick<Context, 'logGroupName' | 'logStreamName' | 'awsRequestId'> = {
+      logGroupName: 'LOG_GROUP',
+      logStreamName: 'LOG_EVENT',
+      awsRequestId: 'REQUEST_ID',
+    };
     expect(cwllink.fromLambdaContext(context as Context)).toBe(
       `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart}`
-    ));
+    );
+  });
 });
