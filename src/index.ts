@@ -83,21 +83,40 @@ export const gunzipAsync = (src: Buffer): Promise<Buffer> => {
 };
 
 /**
+ * Decode CloudWatch Logs data.
+ *
+ * @param {string} data base64 of zipped data.
+ * @return {CloudWatchLogsDecodedData} CloudWatch Logs decoded data.
+ */
+export const decodeCloudWatchLogsData = async (data: string): Promise<CloudWatchLogsDecodedData> => {
+  const compressed = Buffer.from(data, 'base64');
+  const decompressed = await gunzipAsync(compressed);
+  const ascii = decompressed.toString('ascii');
+  const cleaned = ascii.replace(/[\u0000-\u001F]+/g, '');
+  return JSON.parse(cleaned) as CloudWatchLogsDecodedData;
+};
+
+/**
+ * Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
+ *
+ * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
+ * @return {*} a link for a Log Event page filtered by request id.
+ */
+export const fromCloudWatchLogsData = async (data: CloudWatchLogsDecodedData): Promise<string> => {
+  const region = process.env.AWS_REGION;
+  const { logGroup, logStream, logEvents } = data;
+  const requestId = logEvents[0].message.match(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)[0];
+  const link = create(region, logGroup, logStream, { terms: [requestId] });
+  return link;
+};
+
+/**
  * Create a link for CloudWatch Logs from a event of AWS Lambda triggered by Subscription Filters.
  *
  * @param {CloudWatchLogsEvent} event a event of AWS Lambda triggered by Subscription Filters.
  * @return {*} a link for a Log Event page filtered by request id.
  */
 export const fromLambdaEventTriggeredBySubscriptionFilters = async (event: CloudWatchLogsEvent): Promise<string> => {
-  const region = process.env.AWS_REGION;
-  const compressed = Buffer.from(event.awslogs.data, 'base64');
-  const decompressed = await gunzipAsync(compressed);
-  const ascii = decompressed.toString('ascii');
-  const cleaned = ascii.replace(/[\u0000-\u001F]+/g, '');
-  const decodedEvent = JSON.parse(cleaned) as CloudWatchLogsDecodedData;
-  console.log(decodedEvent);
-  const { logGroup, logStream, logEvents } = decodedEvent;
-  const requestId = logEvents[0].message.match(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)[0];
-  const link = create(region, logGroup, logStream, { terms: [requestId] });
-  return link;
+  const decoded = await decodeCloudWatchLogsData(event.awslogs.data);
+  return fromCloudWatchLogsData(decoded);
 };
