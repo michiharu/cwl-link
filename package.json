@@ -1,6 +1,6 @@
 {
   "name": "cwl-link",
-  "version": "1.1.1",
+  "version": "1.1.3",
   "description": "Create a CloudWatch Logs Link",
   "keywords": [
     "AWS",
@@ -16,9 +16,10 @@
   },
   "author": "michiharu",
   "license": "MIT",
-  "main": "dist/cwl-link.js",
-  "module": "dist/cwl-link.mjs",
-  "types": "dist/cwl-link.d.ts",
+  "type": "module",
+  "main": "dist/cjs/cwl-link.cjs",
+  "module": "dist/mjs/cwl-link.mjs",
+  "types": "dist/dts/cwl-link.d.ts",
   "files": [
     "/dist"
   ],
@@ -28,17 +29,17 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.93",
-    "@types/jest": "^27.4.1",
-    "@types/node": "^17.0.23",
-    "esbuild": "^0.14.32",
+    "@types/aws-lambda": "^8.10.121",
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.6.3",
+    "esbuild": "^0.19.3",
     "esbuild-jest": "^0.5.0",
-    "jest": "^27.5.1",
-    "rollup": "^2.70.1",
-    "rollup-plugin-dts": "^4.2.0",
-    "rollup-plugin-esbuild": "^4.9.1",
-    "typedoc": "^0.22.15",
-    "typedoc-plugin-markdown": "^3.12.0",
-    "typescript": "^4.6.3"
+    "jest": "^29.7.0",
+    "rollup": "^3.29.2",
+    "rollup-plugin-dts": "^6.0.2",
+    "rollup-plugin-esbuild": "^6.0.1",
+    "typedoc": "^0.25.1",
+    "typedoc-plugin-markdown": "^3.16.0",
+    "typescript": "^5.2.2"
   }
 }
