@@ -48,7 +48,7 @@ exports.handler = async function(event, context) {
 
   // you can use decoded data.
 
-  const link = await cwllink.fromCloudWatchLogsData(decoded);
+  const link = cwllink.fromCloudWatchLogsData(decoded);
 }
 ```
 
