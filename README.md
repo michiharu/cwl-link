@@ -78,7 +78,7 @@ const filteredByMixLink = cwllink.create(region, logGroupName, logEventName, { t
 
 These Usages have been tested.
 
-## Type aliases
+## Type Aliases
 
 ### FilterOptions
 
@@ -96,7 +96,7 @@ Options for filtering logs.
 
 #### Defined in
 
-[index.ts:5](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L5)
+[index.ts:5](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L5)
 
 ## Functions
 
@@ -108,12 +108,12 @@ Create a link for CloudWatch Logs.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `region` | `string` |
-| `logGroup` | `string` |
-| `logEvents?` | `string` |
-| `options` | [`FilterOptions`](modules.md#filteroptions) |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `region` | `string` |  |
+| `logGroup` | `string` |  |
+| `logEvents?` | `string` | optional parameter |
+| `options?` | [`FilterOptions`](modules.md#filteroptions) | optional parameter for filtering logs |
 
 #### Returns
 
@@ -123,7 +123,7 @@ a link for CloudWatch Logs.
 
 #### Defined in
 
-[index.ts:27](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L27)
+[index.ts:27](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L27)
 
 ___
 
@@ -147,13 +147,13 @@ CloudWatch Logs decoded data.
 
 #### Defined in
 
-[index.ts:91](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L91)
+[index.ts:93](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L93)
 
 ___
 
 ### fromCloudWatchLogsData
 
-▸ **fromCloudWatchLogsData**(`data`): `Promise`<`string`\>
+▸ **fromCloudWatchLogsData**(`data`): `string`
 
 Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
 
@@ -165,13 +165,13 @@ Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
 
 #### Returns
 
-`Promise`<`string`\>
+`string`
 
 a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:105](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L105)
+[index.ts:107](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L107)
 
 ___
 
@@ -195,7 +195,7 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:64](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L64)
+[index.ts:66](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L66)
 
 ___
 
@@ -219,7 +219,7 @@ a link for a Log Event page filtered by request id.
 
 #### Defined in
 
-[index.ts:119](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L119)
+[index.ts:121](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L121)
 
 ___
 
@@ -227,7 +227,7 @@ ___
 
 ▸ **gunzipAsync**(`src`): `Promise`<`Buffer`\>
 
-gunzipAsync is a promise wapper of zlib.gunzip.
+gunzipAsync is a promise wrapper of zlib.gunzip.
 
 #### Parameters
 
@@ -243,4 +243,4 @@ decompressed
 
 #### Defined in
 
-[index.ts:76](https://github.com/michiharu/cwl-link/blob/538e650/src/index.ts#L76)
+[index.ts:78](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L78)

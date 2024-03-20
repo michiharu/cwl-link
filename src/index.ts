@@ -29,16 +29,18 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
   url.searchParams.set('region', region);
 
   const group = encodeURIComponent(encodeURIComponent(logGroup)).replace(/%/g, '$');
+  const groupPart = `logsV2:log-groups/log-group/${group}`
   if (!logEvents) {
     // return logGroup link
-    url.hash = `logsV2:log-groups/log-group/${group}`;
+    url.hash = groupPart;
     return url.toString();
   }
 
   const event = encodeURIComponent(encodeURIComponent(logEvents)).replace(/%/g, '$');
+   const eventPart = `log-events/${event}`;
   if (Object.keys(options).length === 0) {
     // return logEvents link
-    url.hash = `logsV2:log-groups/log-group/${group}/log-events/${event}`;
+    url.hash = `${groupPart}/${eventPart}`;
     return url.toString();
   }
 
@@ -51,7 +53,7 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
   if (typeof end === 'number') filters.push(`end=${end}`);
 
   const filter = encodeURIComponent(`?${filters.join('&')}`).replace(/%/g, '$');
-  url.hash = `logsV2:log-groups/log-group/${group}/log-events/${event}${filter}`;
+  url.hash = `${groupPart}/${eventPart}${filter}`;
   return url.toString();
 };
 
@@ -68,7 +70,7 @@ export const fromLambdaContext = (context: Context): string => {
 };
 
 /**
- * gunzipAsync is a promise wapper of zlib.gunzip.
+ * gunzipAsync is a promise wrapper of zlib.gunzip.
  *
  * @param {Buffer} compressed
  * @returns decompressed
