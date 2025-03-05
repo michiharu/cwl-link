@@ -1,4 +1,4 @@
-import { CloudWatchLogsEvent, Context } from 'aws-lambda';
+import { Context } from 'aws-lambda';
 import * as cwllink from './index';
 
 const base = `https://region.console.aws.amazon.com/cloudwatch/home?region=region`;
@@ -65,5 +65,13 @@ describe('cwllink.fromLambdaContext()', () => {
     expect(cwllink.fromLambdaContext(context as Context)).toBe(
       `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart}`
     );
+  });
+});
+
+describe('cwllink.decodeCloudWatchLogsData()', () => {
+  test('contains Japanese', async () => {
+    // Buffer.from(zlib.gzipSync(`{"message":"こんにちは。"}`)).toString('base64');
+    const data = 'H4sIAAAAAAAAE6tWyk0tLk5MT1WyUnrcOPlx0+THjasfNy583Lj+cUOTUi0Allde1iAAAAA=';
+    expect(await cwllink.decodeCloudWatchLogsData(data)).toEqual({ message: 'こんにちは。' });
   });
 });
