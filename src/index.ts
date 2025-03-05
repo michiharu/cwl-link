@@ -93,8 +93,8 @@ export const gunzipAsync = (src: Buffer): Promise<Buffer> => {
 export const decodeCloudWatchLogsData = async (data: string): Promise<CloudWatchLogsDecodedData> => {
   const compressed = Buffer.from(data, 'base64');
   const decompressed = await gunzipAsync(compressed);
-  const ascii = decompressed.toString('ascii');
-  const cleaned = ascii.replace(/[\u0000-\u001F]+/g, '');
+  const utf8 = decompressed.toString('utf-8');
+  const cleaned = utf8.replace(/[\u0000-\u001F]+/g, '');
   return JSON.parse(cleaned) as CloudWatchLogsDecodedData;
 };
 
