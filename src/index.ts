@@ -107,9 +107,9 @@ export const decodeCloudWatchLogsData = async (data: string): Promise<CloudWatch
 export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData): string => {
   const region = process.env.AWS_REGION;
   const { logGroup, logStream, logEvents } = data;
-  const requestId = logEvents[0].message.match(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)[0];
-  const link = create(region, logGroup, logStream, { terms: [requestId] });
-  return link;
+  const requestId = logEvents[0].message.match(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)?.at(0);
+  if (requestId === undefined) return create(region, logGroup, logStream);
+  return create(region, logGroup, logStream, { terms: [requestId] });
 };
 
 /**
