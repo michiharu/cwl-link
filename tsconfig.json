@@ -3,5 +3,5 @@
     "target": "esnext",
     "skipLibCheck": true
   },
-  "exclude": ["dist", "jest.config.js", "rollup.config.mjs"]
+  "exclude": ["dist", "jest.config.cjs", "rollup.config.mjs"]
 }
