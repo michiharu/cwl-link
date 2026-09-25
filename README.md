@@ -14,6 +14,10 @@ npm install cwl-link
 yarn add cwl-link
 ```
 
+### TypeScript
+
+`cwl-link` ships its own type definitions and does not require `@types/aws-lambda`. The `Context`, `CloudWatchLogsEvent` and `CloudWatchLogsDecodedData` types from `@types/aws-lambda` are accepted as they are.
+
 ## Usage
 
 ### How to import
@@ -105,6 +109,74 @@ Options for filtering logs.
 
 [index.ts:5](https://github.com/michiharu/cwl-link/blob/83997cc/src/index.ts#L5)
 
+___
+
+### LambdaContext
+
+Ƭ **LambdaContext**: `Object`
+
+The fields of an AWS Lambda `Context` that this library reads.
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `awsRequestId` | `string` |
+| `logGroupName` | `string` |
+| `logStreamName` | `string` |
+
+___
+
+### CloudWatchLogsEvent
+
+Ƭ **CloudWatchLogsEvent**: `Object`
+
+The event AWS Lambda receives from a CloudWatch Logs subscription filter.
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `awslogs` | `{ data: string }` |
+
+___
+
+### CloudWatchLogsDecodedData
+
+Ƭ **CloudWatchLogsDecodedData**: `Object`
+
+The payload of a CloudWatch Logs subscription filter, after base64 decoding and gunzip.
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `logEvents` | `CloudWatchLogsLogEvent`[] |
+| `logGroup` | `string` |
+| `logStream` | `string` |
+| `messageType` | `string` |
+| `owner` | `string` |
+| `subscriptionFilters` | `string`[] |
+
+___
+
+### CloudWatchLogsLogEvent
+
+Ƭ **CloudWatchLogsLogEvent**: `Object`
+
+A log event inside CloudWatchLogsDecodedData.
+
+#### Type declaration
+
+| Name | Type |
+| :------ | :------ |
+| `extractedFields?` | `object` |
+| `id` | `string` |
+| `message` | `string` |
+| `timestamp` | `number` |
+
+`extractedFields` maps a field name to `string | undefined`.
+
 ## Functions
 
 ### create
@@ -193,7 +265,7 @@ Create a link for CloudWatch Logs from a context of AWS Lambda.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `context` | `Context` | a context of AWS Lambda. |
+| `context` | `LambdaContext` | a context of AWS Lambda. |
 | `region?` | `string` | defaults to `AWS_REGION` |
 
 #### Returns

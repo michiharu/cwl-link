@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -17,4 +18,11 @@ test('import("cwl-link") loads the ESM bundle', async () => {
   const cwllink = await import('cwl-link');
   assert.equal(typeof cwllink.create, 'function');
   assert.equal(cwllink.create('region', 'LOG_GROUP'), expected);
+});
+
+test('published type definitions do not import from aws-lambda', () => {
+  for (const file of ['dist/cwl-link.d.ts', 'dist/cwl-link.d.cts']) {
+    const source = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /from\s+['"]aws-lambda['"]/, file);
+  }
 });
