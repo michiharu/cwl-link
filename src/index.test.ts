@@ -14,6 +14,14 @@ const startRelativePart = 'start$3D-3600000';
 const endPart = 'end$3D1649689199000';
 
 describe('cwllink.create()', () => {
+  test(`create('region', '') returns the log groups link`, () => {
+    expect(cwllink.create('region', '')).toBe(`${base}#logsV2:log-groups`);
+  });
+
+  test(`create('region', '', 'LOG_EVENT', { terms: ['REQUEST_ID'] }) returns the log groups link`, () => {
+    expect(cwllink.create('region', '', 'LOG_EVENT', { terms: ['REQUEST_ID'] })).toBe(`${base}#logsV2:log-groups`);
+  });
+
   test(`create('region', 'LOG_GROUP')`, () => {
     expect(cwllink.create('region', 'LOG_GROUP')).toBe(`${base}#logsV2:${groupPart}`);
   });
@@ -87,6 +95,12 @@ describe('cwllink.create() console domain', () => {
   test(`create('cn-north-1', 'LOG_GROUP') uses console.amazonaws.cn`, () => {
     expect(cwllink.create('cn-north-1', 'LOG_GROUP')).toBe(
       `https://cn-north-1.console.amazonaws.cn/cloudwatch/home?region=cn-north-1#logsV2:${groupPart}`
+    );
+  });
+
+  test(`create('cn-north-1', '') uses console.amazonaws.cn`, () => {
+    expect(cwllink.create('cn-north-1', '')).toBe(
+      'https://cn-north-1.console.amazonaws.cn/cloudwatch/home?region=cn-north-1#logsV2:log-groups'
     );
   });
 
@@ -329,6 +343,43 @@ describe('cwllink.fromCloudWatchLogsData()', () => {
       expect(() => cwllink.fromCloudWatchLogsData(decoded)).toThrow(regionError);
     });
   });
+
+  test('fromCloudWatchLogsData(data) with empty logEvents returns the log stream link', () => {
+    const decoded = { ...createDecodedData(''), logEvents: [] };
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('fromCloudWatchLogsData(data) with empty logEvents still throws when AWS_REGION is not set', async () => {
+    const decoded = { ...createDecodedData(''), logEvents: [] };
+    await withoutAwsRegion(() => {
+      expect(() => cwllink.fromCloudWatchLogsData(decoded)).toThrow(regionError);
+    });
+  });
+
+  test('fromCloudWatchLogsData(data) with CONTROL_MESSAGE returns the log group link', () => {
+    const decoded = {
+      ...createDecodedData('CWL CONTROL MESSAGE: Checking health of destination Firehose.'),
+      messageType: 'CONTROL_MESSAGE',
+    };
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}`);
+  });
+
+  test('fromCloudWatchLogsData(data) with a real CONTROL_MESSAGE payload returns the log groups link', () => {
+    const decoded: CloudWatchLogsDecodedData = {
+      messageType: 'CONTROL_MESSAGE',
+      owner: 'CloudwatchLogs',
+      logGroup: '',
+      logStream: '',
+      subscriptionFilters: [],
+      logEvents: [
+        { id: '', timestamp: 1510109208016, message: 'CWL CONTROL MESSAGE: Checking health of destination Firehose.' },
+      ],
+    };
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:log-groups`);
+  });
 });
 
 describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
@@ -341,5 +392,16 @@ describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
       const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event, 'region');
       expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
     });
+  });
+
+  test('fromLambdaEventTriggeredBySubscriptionFilters(event) with CONTROL_MESSAGE returns the log group link', async () => {
+    const decoded = {
+      ...createDecodedData('CWL CONTROL MESSAGE: Checking health of destination Firehose.'),
+      messageType: 'CONTROL_MESSAGE',
+    };
+    const data = Buffer.from(zlib.gzipSync(JSON.stringify(decoded))).toString('base64');
+    const event: CloudWatchLogsEvent = { awslogs: { data } };
+    const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event);
+    expect(link).toBe(`${base}#logsV2:${groupPart}`);
   });
 });

@@ -31,7 +31,7 @@ const consoleDomain = (region: string): string => {
  * Create a link for CloudWatch Logs.
  *
  * @param {string} region
- * @param {string} logGroup
+ * @param {string} logGroup an empty string yields the log groups list link.
  * @param {string} [logEvents] optional parameter
  * @param {string[]} [options] optional parameter for filtering logs
  * @return {*} a link for CloudWatch Logs.
@@ -39,6 +39,12 @@ const consoleDomain = (region: string): string => {
 export const create = (region: string, logGroup: string, logEvents?: string, options: FilterOptions = {}): string => {
   const url = new URL(`https://${region}.console.${consoleDomain(region)}/cloudwatch/home`);
   url.searchParams.set('region', region);
+
+  if (!logGroup) {
+    // return log groups link
+    url.hash = 'logsV2:log-groups';
+    return url.toString();
+  }
 
   const group = encodeURIComponent(encodeURIComponent(logGroup)).replace(/%/g, '$');
   const groupPart = `logsV2:log-groups/log-group/${group}`
@@ -187,6 +193,10 @@ const extractRequestId = (message: string): string | undefined => {
  * The request id is read from the Lambda log line prefix of the first log event
  * (or from its `requestId` field in the JSON log format), not from the message body.
  * If no request id is found, the link is not filtered.
+ * If `logEvents` is empty, the link is the plain log stream link.
+ * If `messageType` is `CONTROL_MESSAGE` (a health check of the subscription destination,
+ * not log data), the link is the log group link; the payload AWS sends has an empty
+ * `logGroup`, so that resolves to the log groups list of the region.
  *
  * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
  * @param {string} [region] defaults to process.env.AWS_REGION
@@ -195,8 +205,10 @@ const extractRequestId = (message: string): string | undefined => {
  */
 export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData, region?: string): string => {
   const resolved = resolveRegion(region);
-  const { logGroup, logStream, logEvents } = data;
-  const requestId = extractRequestId(logEvents[0].message);
+  const { messageType, logGroup, logStream, logEvents } = data;
+  if (messageType === 'CONTROL_MESSAGE') return create(resolved, logGroup);
+  const first = logEvents[0];
+  const requestId = first === undefined ? undefined : extractRequestId(first.message);
   if (requestId === undefined) return create(resolved, logGroup, logStream);
   return create(resolved, logGroup, logStream, { terms: [requestId] });
 };
