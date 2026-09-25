@@ -14,7 +14,7 @@ export default [
     plugins: [esbuild()],
     output: [
       {
-        file: `${name}.js`,
+        file: `${name}.cjs`,
         format: 'cjs',
         sourcemap: true,
       },
@@ -27,9 +27,15 @@ export default [
   }),
   bundle({
     plugins: [dts()],
-    output: {
-      file: `${name}.d.ts`,
-      format: 'es',
-    },
+    output: [
+      {
+        file: `${name}.d.ts`,
+        format: 'es',
+      },
+      {
+        file: `${name}.d.cts`,
+        format: 'es',
+      },
+    ],
   }),
 ];
