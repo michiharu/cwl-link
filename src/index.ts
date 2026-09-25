@@ -194,6 +194,9 @@ const extractRequestId = (message: string): string | undefined => {
  * (or from its `requestId` field in the JSON log format), not from the message body.
  * If no request id is found, the link is not filtered.
  * If `logEvents` is empty, the link is the plain log stream link.
+ * If `messageType` is `CONTROL_MESSAGE` (a health check of the subscription destination,
+ * not log data), the link is the log group link; the payload AWS sends has an empty
+ * `logGroup`, so that resolves to the log groups list of the region.
  *
  * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
  * @param {string} [region] defaults to process.env.AWS_REGION
@@ -202,7 +205,8 @@ const extractRequestId = (message: string): string | undefined => {
  */
 export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData, region?: string): string => {
   const resolved = resolveRegion(region);
-  const { logGroup, logStream, logEvents } = data;
+  const { messageType, logGroup, logStream, logEvents } = data;
+  if (messageType === 'CONTROL_MESSAGE') return create(resolved, logGroup);
   const first = logEvents[0];
   const requestId = first === undefined ? undefined : extractRequestId(first.message);
   if (requestId === undefined) return create(resolved, logGroup, logStream);

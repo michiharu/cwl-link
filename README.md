@@ -54,6 +54,8 @@ exports.handler = async function(event, context) {
 }
 ```
 
+Subscription filters also deliver a `CONTROL_MESSAGE` payload to check that the destination is reachable. It is not log data, so `fromCloudWatchLogsData` and `fromLambdaEventTriggeredBySubscriptionFilters` return the log group link for it. The payload AWS sends has an empty `logGroup`, so in practice that is the log groups list of the region.
+
 ### Other Node.js runtime environment
 
 ```typescript

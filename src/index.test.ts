@@ -356,6 +356,30 @@ describe('cwllink.fromCloudWatchLogsData()', () => {
       expect(() => cwllink.fromCloudWatchLogsData(decoded)).toThrow(regionError);
     });
   });
+
+  test('fromCloudWatchLogsData(data) with CONTROL_MESSAGE returns the log group link', () => {
+    const decoded = {
+      ...createDecodedData('CWL CONTROL MESSAGE: Checking health of destination Firehose.'),
+      messageType: 'CONTROL_MESSAGE',
+    };
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}`);
+  });
+
+  test('fromCloudWatchLogsData(data) with a real CONTROL_MESSAGE payload returns the log groups link', () => {
+    const decoded: CloudWatchLogsDecodedData = {
+      messageType: 'CONTROL_MESSAGE',
+      owner: 'CloudwatchLogs',
+      logGroup: '',
+      logStream: '',
+      subscriptionFilters: [],
+      logEvents: [
+        { id: '', timestamp: 1510109208016, message: 'CWL CONTROL MESSAGE: Checking health of destination Firehose.' },
+      ],
+    };
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:log-groups`);
+  });
 });
 
 describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
@@ -368,5 +392,16 @@ describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
       const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event, 'region');
       expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
     });
+  });
+
+  test('fromLambdaEventTriggeredBySubscriptionFilters(event) with CONTROL_MESSAGE returns the log group link', async () => {
+    const decoded = {
+      ...createDecodedData('CWL CONTROL MESSAGE: Checking health of destination Firehose.'),
+      messageType: 'CONTROL_MESSAGE',
+    };
+    const data = Buffer.from(zlib.gzipSync(JSON.stringify(decoded))).toString('base64');
+    const event: CloudWatchLogsEvent = { awslogs: { data } };
+    const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event);
+    expect(link).toBe(`${base}#logsV2:${groupPart}`);
   });
 });
