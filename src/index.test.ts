@@ -21,6 +21,28 @@ describe('cwllink.create()', () => {
     expect(cwllink.create('region', 'LOG_GROUP', 'LOG_EVENT')).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
   });
 
+  test(`create('region', 'LOG_GROUP', 'LOG_EVENT', { terms: [] })`, () => {
+    expect(cwllink.create('region', 'LOG_GROUP', 'LOG_EVENT', { terms: [] })).toBe(
+      `${base}#logsV2:${groupPart}/${eventPart}`
+    );
+  });
+
+  test(`create('region', 'LOG_GROUP', 'LOG_EVENT', { start: undefined })`, () => {
+    expect(cwllink.create('region', 'LOG_GROUP', 'LOG_EVENT', { start: undefined })).toBe(
+      `${base}#logsV2:${groupPart}/${eventPart}`
+    );
+  });
+
+  test(`create('region', 'LOG_GROUP', 'LOG_EVENT', {})`, () => {
+    expect(cwllink.create('region', 'LOG_GROUP', 'LOG_EVENT', {})).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test(`create('region', 'LOG_GROUP', 'LOG_EVENT', { terms: [], start })`, () => {
+    expect(cwllink.create('region', 'LOG_GROUP', 'LOG_EVENT', { terms: [], start: 1_649_602_800_000 })).toBe(
+      `${base}#logsV2:${groupPart}/${eventPart}$3F${startPart}`
+    );
+  });
+
   test(`create('region', 'LOG_GROUP', 'LOG_EVENT', { terms: ['REQUEST_ID'] })`, () => {
     expect(cwllink.create('region', 'LOG_GROUP', 'LOG_EVENT', { terms: ['REQUEST_ID'] })).toBe(
       `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`

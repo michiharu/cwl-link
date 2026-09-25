@@ -37,14 +37,8 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
   }
 
   const event = encodeURIComponent(encodeURIComponent(logEvents)).replace(/%/g, '$');
-   const eventPart = `log-events/${event}`;
-  if (Object.keys(options).length === 0) {
-    // return logEvents link
-    url.hash = `${groupPart}/${eventPart}`;
-    return url.toString();
-  }
+  const eventPart = `log-events/${event}`;
 
-  // return logEvent link filtered by terms
   const filters: string[] = [];
   const { terms, start, end } = options;
   if (Array.isArray(terms) && terms.length !== 0)
@@ -52,6 +46,13 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
   if (typeof start === 'number') filters.push(`start=${start}`);
   if (typeof end === 'number') filters.push(`end=${end}`);
 
+  if (filters.length === 0) {
+    // return logEvents link
+    url.hash = `${groupPart}/${eventPart}`;
+    return url.toString();
+  }
+
+  // return logEvent link filtered by terms
   const filter = encodeURIComponent(`?${filters.join('&')}`).replace(/%/g, '$');
   url.hash = `${groupPart}/${eventPart}${filter}`;
   return url.toString();
