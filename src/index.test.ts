@@ -109,4 +109,99 @@ describe('cwllink.fromCloudWatchLogsData()', () => {
     const link = cwllink.fromCloudWatchLogsData(decoded);
     expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
   });
+
+  test('init error log with an unrelated UUID in the body', async () => {
+    const other = 'fedcba98-7654-3210-fedc-ba9876543210';
+    const decoded = createDecodedData(`2025-03-01T-00:00:00.000Z\tundefined\tERROR\tfailed to load ${other}\n`);
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('request log with another UUID in the body', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const other = 'fedcba98-7654-3210-fedc-ba9876543210';
+    const decoded = createDecodedData(`2025-03-01T-00:00:00.000Z\t${uuid4}\tINFO\torder ${other} created\n`);
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+  });
+
+  test('START line', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData(`START RequestId: ${uuid4} Version: $LATEST\n`);
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+  });
+
+  test('REPORT line', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData(
+      `REPORT RequestId: ${uuid4}\tDuration: 1.00 ms\tBilled Duration: 1 ms\tMemory Size: 128 MB\n`
+    );
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+  });
+
+  test('non-hex UUID-like id is ignored', async () => {
+    const decoded = createDecodedData('2025-03-01T-00:00:00.000Z\tzzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz\tERROR\n');
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('plain message without tabs', async () => {
+    const decoded = createDecodedData('hello world');
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('JSON log with requestId', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const other = 'fedcba98-7654-3210-fedc-ba9876543210';
+    const decoded = createDecodedData(
+      JSON.stringify({
+        timestamp: '2025-03-01T00:00:00.000Z',
+        level: 'ERROR',
+        requestId: uuid4,
+        message: `failed for user ${other}`,
+      })
+    );
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+  });
+
+  test('JSON platform event with record.requestId', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData(
+      JSON.stringify({
+        time: '2025-03-01T00:00:00.000Z',
+        type: 'platform.start',
+        record: { requestId: uuid4, version: '$LATEST' },
+      })
+    );
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+  });
+
+  test('JSON log without requestId', async () => {
+    const other = 'fedcba98-7654-3210-fedc-ba9876543210';
+    const decoded = createDecodedData(
+      JSON.stringify({ timestamp: '2025-03-01T00:00:00.000Z', level: 'ERROR', message: `init failed ${other}` })
+    );
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('JSON log with a non-UUID requestId', async () => {
+    const decoded = createDecodedData(
+      JSON.stringify({ timestamp: '2025-03-01T00:00:00.000Z', level: 'ERROR', requestId: 'not-a-uuid' })
+    );
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('malformed JSON starting with {', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData('{"requestId": "' + uuid4);
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
 });
