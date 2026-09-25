@@ -1,5 +1,4 @@
 import * as zlib from 'zlib';
-import { Context, CloudWatchLogsEvent, CloudWatchLogsDecodedData } from 'aws-lambda';
 
 /** Options for filtering logs. */
 export type FilterOptions = {
@@ -13,6 +12,36 @@ export type FilterOptions = {
   start?: number;
   /** You can provide unix timestamp. */
   end?: number;
+};
+
+/** The fields of an AWS Lambda `Context` that this library reads. */
+export type LambdaContext = {
+  logGroupName: string;
+  logStreamName: string;
+  awsRequestId: string;
+};
+
+/** A log event inside CloudWatchLogsDecodedData. */
+export type CloudWatchLogsLogEvent = {
+  id: string;
+  timestamp: number;
+  message: string;
+  extractedFields?: { [name: string]: string | undefined } | undefined;
+};
+
+/** The payload of a CloudWatch Logs subscription filter, after base64 decoding and gunzip. */
+export type CloudWatchLogsDecodedData = {
+  owner: string;
+  logGroup: string;
+  logStream: string;
+  subscriptionFilters: string[];
+  messageType: string;
+  logEvents: CloudWatchLogsLogEvent[];
+};
+
+/** The event AWS Lambda receives from a CloudWatch Logs subscription filter. */
+export type CloudWatchLogsEvent = {
+  awslogs: { data: string };
 };
 
 /**
@@ -93,12 +122,12 @@ const resolveRegion = (region?: string): string => {
 /**
  * Create a link for CloudWatch Logs from a context of AWS Lambda.
  *
- * @param {Context} context a context of AWS Lambda.
+ * @param {LambdaContext} context a context of AWS Lambda.
  * @param {string} [region] defaults to process.env.AWS_REGION
  * @return {*} a link for a Log Event page filtered by request id.
  * @throws {Error} if region is not passed and AWS_REGION is not set.
  */
-export const fromLambdaContext = (context: Context, region?: string): string => {
+export const fromLambdaContext = (context: LambdaContext, region?: string): string => {
   const resolved = resolveRegion(region);
   const { logGroupName, logStreamName, awsRequestId } = context;
   return create(resolved, logGroupName, logStreamName, { terms: [awsRequestId] });

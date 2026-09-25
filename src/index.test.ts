@@ -1,6 +1,11 @@
 import * as zlib from 'zlib';
-import { CloudWatchLogsDecodedData, CloudWatchLogsEvent, Context } from 'aws-lambda';
+import type {
+  CloudWatchLogsDecodedData as AwsDecoded,
+  CloudWatchLogsEvent as AwsEvent,
+  Context as AwsContext,
+} from 'aws-lambda';
 import * as cwllink from './index';
+import type { CloudWatchLogsDecodedData, CloudWatchLogsEvent, LambdaContext } from './index';
 
 const base = `https://region.console.aws.amazon.com/cloudwatch/home?region=region`;
 const groupId = 'LOG_GROUP';
@@ -151,44 +156,44 @@ const withoutAwsRegion = async (fn: () => unknown): Promise<void> => {
 };
 
 describe('cwllink.fromLambdaContext()', () => {
-  const context: Pick<Context, 'logGroupName' | 'logStreamName' | 'awsRequestId'> = {
+  const context: LambdaContext = {
     logGroupName: 'LOG_GROUP',
     logStreamName: 'LOG_EVENT',
     awsRequestId: termId,
   };
 
   test('fromLambdaContext(context)', () => {
-    const context: Pick<Context, 'logGroupName' | 'logStreamName' | 'awsRequestId'> = {
+    const context: LambdaContext = {
       logGroupName: 'LOG_GROUP',
       logStreamName: 'LOG_EVENT',
       awsRequestId: termId,
     };
-    expect(cwllink.fromLambdaContext(context as Context)).toBe(
+    expect(cwllink.fromLambdaContext(context)).toBe(
       `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
     );
   });
 
   test(`fromLambdaContext(context, 'other') uses the argument over AWS_REGION`, () => {
-    expect(cwllink.fromLambdaContext(context as Context, 'other')).toBe(
+    expect(cwllink.fromLambdaContext(context, 'other')).toBe(
       `${otherBase}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
     );
   });
 
   test(`fromLambdaContext(context, 'us-gov-west-1') links to the GovCloud console`, () => {
-    expect(cwllink.fromLambdaContext(context as Context, 'us-gov-west-1')).toBe(
+    expect(cwllink.fromLambdaContext(context, 'us-gov-west-1')).toBe(
       `https://us-gov-west-1.console.amazonaws-us-gov.com/cloudwatch/home?region=us-gov-west-1#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
     );
   });
 
   test('fromLambdaContext(context) throws when AWS_REGION is not set', async () => {
     await withoutAwsRegion(() => {
-      expect(() => cwllink.fromLambdaContext(context as Context)).toThrow(regionError);
+      expect(() => cwllink.fromLambdaContext(context)).toThrow(regionError);
     });
   });
 
   test(`fromLambdaContext(context, 'region') works when AWS_REGION is not set`, async () => {
     await withoutAwsRegion(() => {
-      expect(cwllink.fromLambdaContext(context as Context, 'region')).toBe(
+      expect(cwllink.fromLambdaContext(context, 'region')).toBe(
         `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
       );
     });
@@ -403,5 +408,25 @@ describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
     const event: CloudWatchLogsEvent = { awslogs: { data } };
     const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event);
     expect(link).toBe(`${base}#logsV2:${groupPart}`);
+  });
+});
+
+// Compile-time checks, verified by `pnpm typecheck`. esbuild-jest strips the types, so these declarations have no
+// runtime value and the assignments below live in a function that is never called.
+declare const awsContext: AwsContext;
+declare const awsEvent: AwsEvent;
+declare const awsDecoded: AwsDecoded;
+declare const decodedData: CloudWatchLogsDecodedData;
+
+describe('type compatibility with @types/aws-lambda', () => {
+  test('the aws-lambda types are accepted as the in-package types', () => {
+    const assertAssignable = () => {
+      const context: LambdaContext = awsContext;
+      const event: CloudWatchLogsEvent = awsEvent;
+      const decoded: CloudWatchLogsDecodedData = awsDecoded;
+      const reverse: AwsDecoded = decodedData;
+      return [context, event, decoded, reverse];
+    };
+    expect(typeof assertAssignable).toBe('function');
   });
 });
