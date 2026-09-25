@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true
   },
   "exclude": ["dist", "jest.config.cjs", "rollup.config.mjs"]
 }
