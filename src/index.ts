@@ -98,8 +98,35 @@ export const decodeCloudWatchLogsData = async (data: string): Promise<CloudWatch
   return JSON.parse(cleaned) as CloudWatchLogsDecodedData;
 };
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Extract the request id from the prefix of a Lambda log line.
+ *
+ * Tries, in order:
+ * - a `START` / `END` / `REPORT` platform line (`START RequestId: <id> ...`)
+ * - the second tab-separated field of a text log line (`timestamp\trequestId\tLEVEL\tmessage`)
+ *
+ * The message body is never searched, so an unrelated UUID in it is not picked up.
+ *
+ * @param {string} message a message of a log event.
+ * @return {string | undefined} the request id, or undefined if none is found.
+ */
+const extractRequestId = (message: string): string | undefined => {
+  const platform = message.match(/^(?:START|END|REPORT) RequestId: ([0-9a-f-]{36})/i)?.[1];
+  if (platform !== undefined && UUID_PATTERN.test(platform)) return platform;
+
+  const field = message.split('\t')[1];
+  if (field !== undefined && UUID_PATTERN.test(field)) return field;
+
+  return undefined;
+};
+
 /**
  * Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
+ *
+ * The request id is read from the Lambda log line prefix of the first log event,
+ * not from the message body. If no request id is found, the link is not filtered.
  *
  * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
  * @return {*} a link for a Log Event page filtered by request id.
@@ -107,7 +134,7 @@ export const decodeCloudWatchLogsData = async (data: string): Promise<CloudWatch
 export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData): string => {
   const region = process.env.AWS_REGION;
   const { logGroup, logStream, logEvents } = data;
-  const requestId = logEvents[0].message.match(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/)?.at(0);
+  const requestId = extractRequestId(logEvents[0].message);
   if (requestId === undefined) return create(region, logGroup, logStream);
   return create(region, logGroup, logStream, { terms: [requestId] });
 };
