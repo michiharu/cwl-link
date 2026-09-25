@@ -78,6 +78,8 @@ const filteredByEndLink = cwllink.create(region, logGroupName, logEventName, { e
 const filteredByMixLink = cwllink.create(region, logGroupName, logEventName, { terms, start, end });
 ```
 
+The console host is chosen from the region. `cn-*` regions link to `console.amazonaws.cn`, `us-gov-*` regions link to `console.amazonaws-us-gov.com`, and every other region links to `console.aws.amazon.com`.
+
 These Usages have been tested.
 
 ## Type Aliases

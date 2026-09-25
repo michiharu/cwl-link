@@ -80,6 +80,45 @@ describe('cwllink.create()', () => {
   });
 });
 
+describe('cwllink.create() console domain', () => {
+  const link = (host: string, region: string) =>
+    `https://${region}.${host}/cloudwatch/home?region=${region}#logsV2:${groupPart}`;
+
+  test(`create('cn-north-1', 'LOG_GROUP') uses console.amazonaws.cn`, () => {
+    expect(cwllink.create('cn-north-1', 'LOG_GROUP')).toBe(
+      `https://cn-north-1.console.amazonaws.cn/cloudwatch/home?region=cn-north-1#logsV2:${groupPart}`
+    );
+  });
+
+  test(`create('cn-northwest-1', 'LOG_GROUP') uses console.amazonaws.cn`, () => {
+    expect(cwllink.create('cn-northwest-1', 'LOG_GROUP')).toBe(link('console.amazonaws.cn', 'cn-northwest-1'));
+  });
+
+  test(`create('us-gov-west-1', 'LOG_GROUP') uses console.amazonaws-us-gov.com`, () => {
+    expect(cwllink.create('us-gov-west-1', 'LOG_GROUP')).toBe(
+      `https://us-gov-west-1.console.amazonaws-us-gov.com/cloudwatch/home?region=us-gov-west-1#logsV2:${groupPart}`
+    );
+  });
+
+  test(`create('us-gov-east-1', 'LOG_GROUP') uses console.amazonaws-us-gov.com`, () => {
+    expect(cwllink.create('us-gov-east-1', 'LOG_GROUP')).toBe(link('console.amazonaws-us-gov.com', 'us-gov-east-1'));
+  });
+
+  test(`create('us-east-1', 'LOG_GROUP') keeps console.aws.amazon.com`, () => {
+    expect(cwllink.create('us-east-1', 'LOG_GROUP')).toBe(link('console.aws.amazon.com', 'us-east-1'));
+  });
+
+  test(`create('ap-northeast-1', 'LOG_GROUP') keeps console.aws.amazon.com`, () => {
+    expect(cwllink.create('ap-northeast-1', 'LOG_GROUP')).toBe(link('console.aws.amazon.com', 'ap-northeast-1'));
+  });
+
+  test(`create('cn-north-1', 'LOG_GROUP', 'LOG_EVENT', { terms: ['REQUEST_ID'] }) keeps the hash unchanged`, () => {
+    const url = new URL(cwllink.create('cn-north-1', 'LOG_GROUP', 'LOG_EVENT', { terms: ['REQUEST_ID'] }));
+    expect(url.host).toBe('cn-north-1.console.amazonaws.cn');
+    expect(url.hash).toBe(`#logsV2:${groupPart}/${eventPart}$3F${termPart()}`);
+  });
+});
+
 process.env.AWS_REGION = 'region';
 
 const otherBase = `https://other.console.aws.amazon.com/cloudwatch/home?region=other`;
@@ -118,6 +157,12 @@ describe('cwllink.fromLambdaContext()', () => {
   test(`fromLambdaContext(context, 'other') uses the argument over AWS_REGION`, () => {
     expect(cwllink.fromLambdaContext(context as Context, 'other')).toBe(
       `${otherBase}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
+    );
+  });
+
+  test(`fromLambdaContext(context, 'us-gov-west-1') links to the GovCloud console`, () => {
+    expect(cwllink.fromLambdaContext(context as Context, 'us-gov-west-1')).toBe(
+      `https://us-gov-west-1.console.amazonaws-us-gov.com/cloudwatch/home?region=us-gov-west-1#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
     );
   });
 

@@ -16,6 +16,18 @@ export type FilterOptions = {
 };
 
 /**
+ * Select the console domain of the AWS partition the region belongs to.
+ *
+ * @param {string} region
+ * @return {string} `amazonaws.cn` for `cn-*`, `amazonaws-us-gov.com` for `us-gov-*`, otherwise `aws.amazon.com`.
+ */
+const consoleDomain = (region: string): string => {
+  if (region.startsWith('cn-')) return 'amazonaws.cn';
+  if (region.startsWith('us-gov-')) return 'amazonaws-us-gov.com';
+  return 'aws.amazon.com';
+};
+
+/**
  * Create a link for CloudWatch Logs.
  *
  * @param {string} region
@@ -25,7 +37,7 @@ export type FilterOptions = {
  * @return {*} a link for CloudWatch Logs.
  */
 export const create = (region: string, logGroup: string, logEvents?: string, options: FilterOptions = {}): string => {
-  const url = new URL(`https://${region}.console.aws.amazon.com/cloudwatch/home`);
+  const url = new URL(`https://${region}.console.${consoleDomain(region)}/cloudwatch/home`);
   url.searchParams.set('region', region);
 
   const group = encodeURIComponent(encodeURIComponent(logGroup)).replace(/%/g, '$');
