@@ -101,9 +101,36 @@ export const decodeCloudWatchLogsData = async (data: string): Promise<CloudWatch
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
+ * Read the request id from a Lambda log line in the JSON log format.
+ *
+ * Only the `requestId` field and the `record.requestId` field (platform events) are read.
+ *
+ * @param {string} message a message of a log event.
+ * @return {string | undefined} the request id, or undefined if the message is not such a JSON log line.
+ */
+const requestIdFromJson = (message: string): string | undefined => {
+  if (!message.trimStart().startsWith('{')) return undefined;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(message);
+  } catch {
+    return undefined;
+  }
+  if (typeof parsed !== 'object' || parsed === null) return undefined;
+
+  const { requestId, record } = parsed as { requestId?: unknown; record?: { requestId?: unknown } | null };
+  for (const candidate of [requestId, record?.requestId]) {
+    if (typeof candidate === 'string' && UUID_PATTERN.test(candidate)) return candidate;
+  }
+  return undefined;
+};
+
+/**
  * Extract the request id from the prefix of a Lambda log line.
  *
  * Tries, in order:
+ * - the `requestId` or `record.requestId` field of a JSON log line (Lambda JSON log format)
  * - a `START` / `END` / `REPORT` platform line (`START RequestId: <id> ...`)
  * - the second tab-separated field of a text log line (`timestamp\trequestId\tLEVEL\tmessage`)
  *
@@ -113,6 +140,9 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
  * @return {string | undefined} the request id, or undefined if none is found.
  */
 const extractRequestId = (message: string): string | undefined => {
+  const json = requestIdFromJson(message);
+  if (json !== undefined) return json;
+
   const platform = message.match(/^(?:START|END|REPORT) RequestId: ([0-9a-f-]{36})/i)?.[1];
   if (platform !== undefined && UUID_PATTERN.test(platform)) return platform;
 
@@ -125,8 +155,9 @@ const extractRequestId = (message: string): string | undefined => {
 /**
  * Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
  *
- * The request id is read from the Lambda log line prefix of the first log event,
- * not from the message body. If no request id is found, the link is not filtered.
+ * The request id is read from the Lambda log line prefix of the first log event
+ * (or from its `requestId` field in the JSON log format), not from the message body.
+ * If no request id is found, the link is not filtered.
  *
  * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
  * @return {*} a link for a Log Event page filtered by request id.
