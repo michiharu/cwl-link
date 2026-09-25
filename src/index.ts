@@ -187,6 +187,7 @@ const extractRequestId = (message: string): string | undefined => {
  * The request id is read from the Lambda log line prefix of the first log event
  * (or from its `requestId` field in the JSON log format), not from the message body.
  * If no request id is found, the link is not filtered.
+ * If `logEvents` is empty, the link is the plain log stream link.
  *
  * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
  * @param {string} [region] defaults to process.env.AWS_REGION
@@ -196,7 +197,8 @@ const extractRequestId = (message: string): string | undefined => {
 export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData, region?: string): string => {
   const resolved = resolveRegion(region);
   const { logGroup, logStream, logEvents } = data;
-  const requestId = extractRequestId(logEvents[0].message);
+  const first = logEvents[0];
+  const requestId = first === undefined ? undefined : extractRequestId(first.message);
   if (requestId === undefined) return create(resolved, logGroup, logStream);
   return create(resolved, logGroup, logStream, { terms: [requestId] });
 };

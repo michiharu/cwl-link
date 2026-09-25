@@ -329,6 +329,19 @@ describe('cwllink.fromCloudWatchLogsData()', () => {
       expect(() => cwllink.fromCloudWatchLogsData(decoded)).toThrow(regionError);
     });
   });
+
+  test('fromCloudWatchLogsData(data) with empty logEvents returns the log stream link', () => {
+    const decoded = { ...createDecodedData(''), logEvents: [] };
+    const link = cwllink.fromCloudWatchLogsData(decoded);
+    expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test('fromCloudWatchLogsData(data) with empty logEvents still throws when AWS_REGION is not set', async () => {
+    const decoded = { ...createDecodedData(''), logEvents: [] };
+    await withoutAwsRegion(() => {
+      expect(() => cwllink.fromCloudWatchLogsData(decoded)).toThrow(regionError);
+    });
+  });
 });
 
 describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
