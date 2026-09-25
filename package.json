@@ -16,17 +16,31 @@
   },
   "author": "michiharu",
   "license": "MIT",
+  "packageManager": "pnpm@11.24.0",
   "type": "module",
-  "main": "dist/cwl-link.js",
+  "main": "dist/cwl-link.cjs",
   "module": "dist/cwl-link.mjs",
   "types": "dist/cwl-link.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/cwl-link.d.ts",
+        "default": "./dist/cwl-link.mjs"
+      },
+      "require": {
+        "types": "./dist/cwl-link.d.cts",
+        "default": "./dist/cwl-link.cjs"
+      }
+    }
+  },
   "files": [
     "/dist"
   ],
   "scripts": {
     "build": "rollup -c",
     "doc": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts",
-    "test": "jest"
+    "test": "jest && pnpm test:dist",
+    "test:dist": "pnpm build && node --test test/smoke.mjs"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.93",
