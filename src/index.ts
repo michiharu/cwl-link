@@ -127,7 +127,7 @@ const requestIdFromJson = (message: string): string | undefined => {
 };
 
 /**
- * Extract the request id from the prefix of a Lambda log line.
+ * Extract the request id from a Lambda log line, in either the text or the JSON log format.
  *
  * Tries, in order:
  * - the `requestId` or `record.requestId` field of a JSON log line (Lambda JSON log format)
