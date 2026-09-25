@@ -3,5 +3,4 @@ node_modules
 docs
 
 .DS_Store
-.yarn
 work-reports/

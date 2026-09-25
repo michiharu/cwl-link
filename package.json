@@ -16,6 +16,7 @@
   },
   "author": "michiharu",
   "license": "MIT",
+  "packageManager": "pnpm@11.24.0",
   "type": "module",
   "main": "dist/cwl-link.js",
   "module": "dist/cwl-link.mjs",
