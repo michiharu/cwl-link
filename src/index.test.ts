@@ -14,6 +14,14 @@ const startRelativePart = 'start$3D-3600000';
 const endPart = 'end$3D1649689199000';
 
 describe('cwllink.create()', () => {
+  test(`create('region', '') returns the log groups link`, () => {
+    expect(cwllink.create('region', '')).toBe(`${base}#logsV2:log-groups`);
+  });
+
+  test(`create('region', '', 'LOG_EVENT', { terms: ['REQUEST_ID'] }) returns the log groups link`, () => {
+    expect(cwllink.create('region', '', 'LOG_EVENT', { terms: ['REQUEST_ID'] })).toBe(`${base}#logsV2:log-groups`);
+  });
+
   test(`create('region', 'LOG_GROUP')`, () => {
     expect(cwllink.create('region', 'LOG_GROUP')).toBe(`${base}#logsV2:${groupPart}`);
   });
@@ -87,6 +95,12 @@ describe('cwllink.create() console domain', () => {
   test(`create('cn-north-1', 'LOG_GROUP') uses console.amazonaws.cn`, () => {
     expect(cwllink.create('cn-north-1', 'LOG_GROUP')).toBe(
       `https://cn-north-1.console.amazonaws.cn/cloudwatch/home?region=cn-north-1#logsV2:${groupPart}`
+    );
+  });
+
+  test(`create('cn-north-1', '') uses console.amazonaws.cn`, () => {
+    expect(cwllink.create('cn-north-1', '')).toBe(
+      'https://cn-north-1.console.amazonaws.cn/cloudwatch/home?region=cn-north-1#logsV2:log-groups'
     );
   });
 

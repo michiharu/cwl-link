@@ -31,7 +31,7 @@ const consoleDomain = (region: string): string => {
  * Create a link for CloudWatch Logs.
  *
  * @param {string} region
- * @param {string} logGroup
+ * @param {string} logGroup an empty string yields the log groups list link.
  * @param {string} [logEvents] optional parameter
  * @param {string[]} [options] optional parameter for filtering logs
  * @return {*} a link for CloudWatch Logs.
@@ -39,6 +39,12 @@ const consoleDomain = (region: string): string => {
 export const create = (region: string, logGroup: string, logEvents?: string, options: FilterOptions = {}): string => {
   const url = new URL(`https://${region}.console.${consoleDomain(region)}/cloudwatch/home`);
   url.searchParams.set('region', region);
+
+  if (!logGroup) {
+    // return log groups link
+    url.hash = 'logsV2:log-groups';
+    return url.toString();
+  }
 
   const group = encodeURIComponent(encodeURIComponent(logGroup)).replace(/%/g, '$');
   const groupPart = `logsV2:log-groups/log-group/${group}`

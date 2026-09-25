@@ -59,6 +59,7 @@ exports.handler = async function(event, context) {
 ```typescript
 const region = '...';
 const logGroupName = '...';
+const logGroupsLink = cwllink.create(region, ''); // the log groups list of the region
 const logGroupLink = cwllink.create(region, logGroupName);
 
 const logEventName = '...';
@@ -78,7 +79,7 @@ const filteredByEndLink = cwllink.create(region, logGroupName, logEventName, { e
 const filteredByMixLink = cwllink.create(region, logGroupName, logEventName, { terms, start, end });
 ```
 
-The console host is chosen from the region. `cn-*` regions link to `console.amazonaws.cn`, `us-gov-*` regions link to `console.amazonaws-us-gov.com`, and every other region links to `console.aws.amazon.com`.
+The console host is chosen from the region. `cn-*` regions link to `console.amazonaws.cn`, `us-gov-*` regions link to `console.amazonaws-us-gov.com`, and every other region links to `console.aws.amazon.com`. An empty `logGroup` links to the log groups list of the region instead of a single log group.
 
 These Usages have been tested.
 
