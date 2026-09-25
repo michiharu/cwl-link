@@ -59,15 +59,31 @@ export const create = (region: string, logGroup: string, logEvents?: string, opt
 };
 
 /**
+ * Resolve the region from the argument, falling back to process.env.AWS_REGION.
+ *
+ * @param {string} [region] optional parameter
+ * @return {string} the resolved region.
+ * @throws {Error} if neither the argument nor AWS_REGION is a non-empty string.
+ */
+const resolveRegion = (region?: string): string => {
+  if (typeof region === 'string' && region !== '') return region;
+  const env = process.env.AWS_REGION;
+  if (typeof env === 'string' && env !== '') return env;
+  throw new Error('cwl-link: region could not be resolved. Pass the region argument or set AWS_REGION.');
+};
+
+/**
  * Create a link for CloudWatch Logs from a context of AWS Lambda.
  *
  * @param {Context} context a context of AWS Lambda.
+ * @param {string} [region] defaults to process.env.AWS_REGION
  * @return {*} a link for a Log Event page filtered by request id.
+ * @throws {Error} if region is not passed and AWS_REGION is not set.
  */
-export const fromLambdaContext = (context: Context): string => {
-  const region = process.env.AWS_REGION;
+export const fromLambdaContext = (context: Context, region?: string): string => {
+  const resolved = resolveRegion(region);
   const { logGroupName, logStreamName, awsRequestId } = context;
-  return create(region, logGroupName, logStreamName, { terms: [awsRequestId] });
+  return create(resolved, logGroupName, logStreamName, { terms: [awsRequestId] });
 };
 
 /**
@@ -161,23 +177,30 @@ const extractRequestId = (message: string): string | undefined => {
  * If no request id is found, the link is not filtered.
  *
  * @param {CloudWatchLogsDecodedData} data CloudWatch Logs decoded data.
+ * @param {string} [region] defaults to process.env.AWS_REGION
  * @return {*} a link for a Log Event page filtered by request id.
+ * @throws {Error} if region is not passed and AWS_REGION is not set.
  */
-export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData): string => {
-  const region = process.env.AWS_REGION;
+export const fromCloudWatchLogsData = (data: CloudWatchLogsDecodedData, region?: string): string => {
+  const resolved = resolveRegion(region);
   const { logGroup, logStream, logEvents } = data;
   const requestId = extractRequestId(logEvents[0].message);
-  if (requestId === undefined) return create(region, logGroup, logStream);
-  return create(region, logGroup, logStream, { terms: [requestId] });
+  if (requestId === undefined) return create(resolved, logGroup, logStream);
+  return create(resolved, logGroup, logStream, { terms: [requestId] });
 };
 
 /**
  * Create a link for CloudWatch Logs from a event of AWS Lambda triggered by Subscription Filters.
  *
  * @param {CloudWatchLogsEvent} event a event of AWS Lambda triggered by Subscription Filters.
+ * @param {string} [region] defaults to process.env.AWS_REGION
  * @return {*} a link for a Log Event page filtered by request id.
+ * @throws {Error} if region is not passed and AWS_REGION is not set.
  */
-export const fromLambdaEventTriggeredBySubscriptionFilters = async (event: CloudWatchLogsEvent): Promise<string> => {
+export const fromLambdaEventTriggeredBySubscriptionFilters = async (
+  event: CloudWatchLogsEvent,
+  region?: string
+): Promise<string> => {
   const decoded = await decodeCloudWatchLogsData(event.awslogs.data);
-  return fromCloudWatchLogsData(decoded);
+  return fromCloudWatchLogsData(decoded, region);
 };

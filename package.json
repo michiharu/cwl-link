@@ -39,8 +39,9 @@
   "scripts": {
     "build": "rollup -c",
     "doc": "typedoc --plugin typedoc-plugin-markdown --out docs src/index.ts",
-    "test": "jest && pnpm test:dist",
-    "test:dist": "pnpm build && node --test test/smoke.mjs"
+    "test": "pnpm typecheck && jest && pnpm test:dist",
+    "test:dist": "pnpm build && node --test test/smoke.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.93",

@@ -1,4 +1,5 @@
-import { CloudWatchLogsDecodedData, Context } from 'aws-lambda';
+import * as zlib from 'zlib';
+import { CloudWatchLogsDecodedData, CloudWatchLogsEvent, Context } from 'aws-lambda';
 import * as cwllink from './index';
 
 const base = `https://region.console.aws.amazon.com/cloudwatch/home?region=region`;
@@ -80,7 +81,29 @@ describe('cwllink.create()', () => {
 });
 
 process.env.AWS_REGION = 'region';
+
+const otherBase = `https://other.console.aws.amazon.com/cloudwatch/home?region=other`;
+const regionError = 'cwl-link: region could not be resolved. Pass the region argument or set AWS_REGION.';
+
+/** Run fn with AWS_REGION unset, and restore it after fn (or the promise it returns) settles. */
+const withoutAwsRegion = async (fn: () => unknown): Promise<void> => {
+  const saved = process.env.AWS_REGION;
+  delete process.env.AWS_REGION;
+  try {
+    await fn();
+  } finally {
+    if (saved === undefined) delete process.env.AWS_REGION;
+    else process.env.AWS_REGION = saved;
+  }
+};
+
 describe('cwllink.fromLambdaContext()', () => {
+  const context: Pick<Context, 'logGroupName' | 'logStreamName' | 'awsRequestId'> = {
+    logGroupName: 'LOG_GROUP',
+    logStreamName: 'LOG_EVENT',
+    awsRequestId: termId,
+  };
+
   test('fromLambdaContext(context)', () => {
     const context: Pick<Context, 'logGroupName' | 'logStreamName' | 'awsRequestId'> = {
       logGroupName: 'LOG_GROUP',
@@ -90,6 +113,26 @@ describe('cwllink.fromLambdaContext()', () => {
     expect(cwllink.fromLambdaContext(context as Context)).toBe(
       `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
     );
+  });
+
+  test(`fromLambdaContext(context, 'other') uses the argument over AWS_REGION`, () => {
+    expect(cwllink.fromLambdaContext(context as Context, 'other')).toBe(
+      `${otherBase}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
+    );
+  });
+
+  test('fromLambdaContext(context) throws when AWS_REGION is not set', async () => {
+    await withoutAwsRegion(() => {
+      expect(() => cwllink.fromLambdaContext(context as Context)).toThrow(regionError);
+    });
+  });
+
+  test(`fromLambdaContext(context, 'region') works when AWS_REGION is not set`, async () => {
+    await withoutAwsRegion(() => {
+      expect(cwllink.fromLambdaContext(context as Context, 'region')).toBe(
+        `${base}#logsV2:${groupPart}/${eventPart}$3F${termPart()}`
+      );
+    });
   });
 });
 
@@ -101,24 +144,24 @@ describe('cwllink.decodeCloudWatchLogsData()', () => {
   });
 });
 
-describe('cwllink.fromCloudWatchLogsData()', () => {
-  const createDecodedData = (message: string): CloudWatchLogsDecodedData => {
-    return {
-      messageType: 'DATA_MESSAGE',
-      owner: 'owner-id',
-      logGroup: groupId,
-      logStream: eventId,
-      subscriptionFilters: ['abcd1234'],
-      logEvents: [
-        {
-          id: 'abcd1234',
-          timestamp: 0,
-          message: message,
-        },
-      ],
-    };
+const createDecodedData = (message: string): CloudWatchLogsDecodedData => {
+  return {
+    messageType: 'DATA_MESSAGE',
+    owner: 'owner-id',
+    logGroup: groupId,
+    logStream: eventId,
+    subscriptionFilters: ['abcd1234'],
+    logEvents: [
+      {
+        id: 'abcd1234',
+        timestamp: 0,
+        message: message,
+      },
+    ],
   };
+};
 
+describe('cwllink.fromCloudWatchLogsData()', () => {
   test('init error log', async () => {
     const decoded = createDecodedData('2025-03-01T-00:00:00.000Z\tundefined\tERROR\n');
     const link = cwllink.fromCloudWatchLogsData(decoded);
@@ -225,5 +268,33 @@ describe('cwllink.fromCloudWatchLogsData()', () => {
     const decoded = createDecodedData('{"requestId": "' + uuid4);
     const link = cwllink.fromCloudWatchLogsData(decoded);
     expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}`);
+  });
+
+  test(`fromCloudWatchLogsData(data, 'other') uses the argument over AWS_REGION`, () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData(`2025-03-01T-00:00:00.000Z\t${uuid4}\tERROR\n`);
+    const link = cwllink.fromCloudWatchLogsData(decoded, 'other');
+    expect(link).toBe(`${otherBase}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+  });
+
+  test('fromCloudWatchLogsData(data) throws when AWS_REGION is not set', async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData(`2025-03-01T-00:00:00.000Z\t${uuid4}\tERROR\n`);
+    await withoutAwsRegion(() => {
+      expect(() => cwllink.fromCloudWatchLogsData(decoded)).toThrow(regionError);
+    });
+  });
+});
+
+describe('cwllink.fromLambdaEventTriggeredBySubscriptionFilters()', () => {
+  test(`fromLambdaEventTriggeredBySubscriptionFilters(event, 'region') forwards the region`, async () => {
+    const uuid4 = '01234567-89ab-cdef-0123-456789abcdef';
+    const decoded = createDecodedData(`2025-03-01T-00:00:00.000Z\t${uuid4}\tERROR\n`);
+    const data = Buffer.from(zlib.gzipSync(JSON.stringify(decoded))).toString('base64');
+    const event: CloudWatchLogsEvent = { awslogs: { data } };
+    await withoutAwsRegion(async () => {
+      const link = await cwllink.fromLambdaEventTriggeredBySubscriptionFilters(event, 'region');
+      expect(link).toBe(`${base}#logsV2:${groupPart}/${eventPart}$3F${termPart(uuid4)}`);
+    });
   });
 });

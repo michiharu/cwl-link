@@ -32,6 +32,8 @@ exports.handler = function(event, context) {
 }
 ```
 
+The region is read from `AWS_REGION`, which the Lambda runtime sets, or you can pass it as the second argument (`cwllink.fromLambdaContext(context, 'us-east-1')`). The same applies to `fromCloudWatchLogsData` and `fromLambdaEventTriggeredBySubscriptionFilters`. If neither is available, the function throws.
+
 ### AWS Lambda triggered by Subscription Filters
 
 ```typescript
@@ -153,7 +155,7 @@ ___
 
 ### fromCloudWatchLogsData
 
-▸ **fromCloudWatchLogsData**(`data`): `string`
+▸ **fromCloudWatchLogsData**(`data`, `region?`): `string`
 
 Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
 
@@ -162,6 +164,7 @@ Create a link for CloudWatch Logs from CloudWatchLogsDecodedData.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `data` | `CloudWatchLogsDecodedData` | CloudWatch Logs decoded data. |
+| `region?` | `string` | defaults to `AWS_REGION` |
 
 #### Returns
 
@@ -177,7 +180,7 @@ ___
 
 ### fromLambdaContext
 
-▸ **fromLambdaContext**(`context`): `string`
+▸ **fromLambdaContext**(`context`, `region?`): `string`
 
 Create a link for CloudWatch Logs from a context of AWS Lambda.
 
@@ -186,6 +189,7 @@ Create a link for CloudWatch Logs from a context of AWS Lambda.
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `context` | `Context` | a context of AWS Lambda. |
+| `region?` | `string` | defaults to `AWS_REGION` |
 
 #### Returns
 
@@ -201,7 +205,7 @@ ___
 
 ### fromLambdaEventTriggeredBySubscriptionFilters
 
-▸ **fromLambdaEventTriggeredBySubscriptionFilters**(`event`): `Promise`<`string`\>
+▸ **fromLambdaEventTriggeredBySubscriptionFilters**(`event`, `region?`): `Promise`<`string`\>
 
 Create a link for CloudWatch Logs from a event of AWS Lambda triggered by Subscription Filters.
 
@@ -210,6 +214,7 @@ Create a link for CloudWatch Logs from a event of AWS Lambda triggered by Subscr
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `event` | `CloudWatchLogsEvent` | a event of AWS Lambda triggered by Subscription Filters. |
+| `region?` | `string` | defaults to `AWS_REGION` |
 
 #### Returns
 
