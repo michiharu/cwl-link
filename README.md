@@ -89,6 +89,15 @@ The console host is chosen from the region. `cn-*` regions link to `console.amaz
 
 These Usages have been tested.
 
+## Caveats
+
+The CloudWatch console URL format is not a documented or stable API.
+`cwl-link` builds links by following the format the console uses today,
+including its double-encoding with `$` in place of `%`.
+If AWS changes this format, generated links may stop working
+or open without the filter applied until `cwl-link` is updated.
+If you find a broken link, please open an issue.
+
 ## Type Aliases
 
 ### FilterOptions
